@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>品牌展示</title>
+  <title>产品详情</title>
   <style>
     * {
       margin: 0;
@@ -30,23 +30,19 @@
     .banner {
       position: relative;
       width: 100%;
-      aspect-ratio: 3 / 4;
       overflow: hidden;
       background: #eee;
     }
 
     .banner-track {
       display: flex;
-      height: 100%;
       transition: transform 0.4s ease;
     }
 
     .banner-track img {
       flex-shrink: 0;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      cursor: pointer;
+      display: block;
     }
 
     .banner-dots {
@@ -56,6 +52,7 @@
       transform: translateX(-50%);
       display: flex;
       gap: 6px;
+      z-index: 5;
     }
 
     .banner-dot {
@@ -73,16 +70,36 @@
       background: #fff;
     }
 
-    /* 下方图片列表 */
-    .content {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
+    /* 计数器 */
+    .counter {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      z-index: 5;
     }
 
-    .content img {
-      width: 100%;
-      display: block;
+    /* 返回按钮 */
+    .back-btn {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
     }
 
     /* PC端居中显示手机宽度 */
@@ -101,54 +118,33 @@
 <body>
 
   <div class="page">
-    <!-- 顶部轮播 -->
     <div class="banner" id="banner">
+      <button class="back-btn" onclick="history.back()">&#10094;</button>
       <div class="banner-track" id="bannerTrack"></div>
       <div class="banner-dots" id="bannerDots"></div>
+      <div class="counter" id="counter"></div>
     </div>
-
-    <!-- 下方图片列表 -->
-    <div class="content" id="content"></div>
   </div>
 
   <script>
-    // 轮播图片
-    const bannerImages = [
-      'img/1-KV.png',
-      'img/1-KV2.png',
+    const images = [
+      'img-exc/主图1.png',
+      'img-exc/主图2.png',
+      'img-exc/主图3.png',
+      'img-exc/主图4.png',
+      'img-exc/主图5.png'
     ];
 
-    // 列表图片（按文件名顺序）
-    const listImages = [
-      'img/2-标题.png',
-      'img/3-机制.png',
-      'img/4-导购.png',
-      'img/5-1热销.png',
-      'img/5-2热销.png',
-      'img/5-3热销.png',
-      'img/6-肩颈.png',
-      'img/7-腹部.png',
-      'img/8-「手部系列」.png',
-      'img/9-「足部系列」.png',
-      'img/10-奖项.png',
-      'img/11-营业执照.png',
-      'img/12-品牌服务.png',
-      'img/13-品牌赞助.png'
-    ];
-
-    // 渲染轮播
     const bannerTrack = document.getElementById('bannerTrack');
     const bannerDots = document.getElementById('bannerDots');
     const banner = document.getElementById('banner');
+    const counter = document.getElementById('counter');
 
-    bannerImages.forEach((src, i) => {
+    images.forEach((src, i) => {
       const img = document.createElement('img');
       img.src = src;
       img.alt = '';
       img.draggable = false;
-      img.addEventListener('click', () => {
-        window.open('detail.html', '_blank');
-      });
       bannerTrack.appendChild(img);
 
       const dot = document.createElement('button');
@@ -165,10 +161,11 @@
     function updateBanner() {
       bannerTrack.style.transform = 'translateX(-' + (current * 100) + '%)';
       dots.forEach((d, i) => d.classList.toggle('active', i === current));
+      counter.textContent = (current + 1) + ' / ' + images.length;
     }
 
     function goTo(i) {
-      current = ((i % bannerImages.length) + bannerImages.length) % bannerImages.length;
+      current = ((i % images.length) + images.length) % images.length;
       updateBanner();
       resetAuto();
     }
@@ -205,20 +202,10 @@
     banner.addEventListener('mouseenter', () => paused = true);
     banner.addEventListener('mouseleave', () => paused = false);
 
-    // 渲染列表图片
-    const content = document.getElementById('content');
-    listImages.forEach(src => {
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = '';
-      img.loading = 'lazy';
-      content.appendChild(img);
-    });
-
-    // 启动
     updateBanner();
     startAuto();
   </script>
+
 </body>
 
 </html>
