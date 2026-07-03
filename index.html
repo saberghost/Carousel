@@ -85,6 +85,49 @@
       display: block;
     }
 
+    /* 内联轮播（热销） */
+    .inline-carousel {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .inline-track {
+      display: flex;
+      transition: transform 0.4s ease;
+    }
+
+    .inline-track img {
+      flex-shrink: 0;
+      width: 100%;
+      display: block;
+    }
+
+    .inline-dots {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+      z-index: 5;
+    }
+
+    .inline-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s;
+      padding: 0;
+      border: none;
+    }
+
+    .inline-dot.active {
+      width: 14px;
+      background: #fff;
+    }
+
     /* PC端居中显示手机宽度 */
     @media (min-width: 481px) {
       body {
@@ -118,14 +161,11 @@
       'img/1-KV2.png',
     ];
 
-    // 列表图片（按文件名顺序）
+    // 列表图片（按文件名顺序，热销图单独轮播）
     const listImages = [
       'img/2-标题.png',
       'img/3-机制.png',
       'img/4-导购.png',
-      'img/5-1热销.png',
-      'img/5-2热销.png',
-      'img/5-3热销.png',
       'img/6-肩颈.png',
       'img/7-腹部.png',
       'img/8-「手部系列」.png',
@@ -134,6 +174,13 @@
       'img/11-营业执照.png',
       'img/12-品牌服务.png',
       'img/13-品牌赞助.png'
+    ];
+
+    // 热销轮播图片
+    const hotImages = [
+      'img/5-1热销.png',
+      'img/5-2热销.png',
+      'img/5-3热销.png'
     ];
 
     // 渲染轮播
@@ -205,14 +252,85 @@
     banner.addEventListener('mouseenter', () => paused = true);
     banner.addEventListener('mouseleave', () => paused = false);
 
-    // 渲染列表图片
+    // 渲染列表图片（在4-导购后插入热销轮播）
     const content = document.getElementById('content');
-    listImages.forEach(src => {
+    const hotIndex = 3; // 第4张图之后插入热销轮播
+
+    listImages.forEach((src, i) => {
       const img = document.createElement('img');
       img.src = src;
       img.alt = '';
       img.loading = 'lazy';
       content.appendChild(img);
+
+      if (i === hotIndex) {
+        // 插入热销轮播
+        const carousel = document.createElement('div');
+        carousel.className = 'inline-carousel';
+        const track = document.createElement('div');
+        track.className = 'inline-track';
+        const dotsWrap = document.createElement('div');
+        dotsWrap.className = 'inline-dots';
+
+        hotImages.forEach((hSrc, hi) => {
+          const hImg = document.createElement('img');
+          hImg.src = hSrc;
+          hImg.alt = '';
+          hImg.draggable = false;
+          track.appendChild(hImg);
+
+          const dot = document.createElement('button');
+          dot.className = 'inline-dot' + (hi === 0 ? ' active' : '');
+          dotsWrap.appendChild(dot);
+        });
+
+        carousel.appendChild(track);
+        carousel.appendChild(dotsWrap);
+        content.appendChild(carousel);
+
+        // 热销轮播逻辑
+        let hotCurrent = 0;
+        const hotDots = dotsWrap.querySelectorAll('.inline-dot');
+        let hotPaused = false;
+        let hotTimer = null;
+
+        function updateHot() {
+          track.style.transform = 'translateX(-' + (hotCurrent * 100) + '%)';
+          hotDots.forEach((d, i) => d.classList.toggle('active', i === hotCurrent));
+        }
+
+        function hotNext() {
+          hotCurrent = (hotCurrent + 1) % hotImages.length;
+          updateHot();
+        }
+
+        function hotStartAuto() {
+          clearInterval(hotTimer);
+          hotTimer = setInterval(() => { if (!hotPaused) hotNext(); }, 3000);
+        }
+
+        let hotTouchX = 0;
+        carousel.addEventListener('touchstart', (e) => {
+          hotTouchX = e.changedTouches[0].clientX;
+          hotPaused = true;
+        }, { passive: true });
+
+        carousel.addEventListener('touchend', (e) => {
+          const diff = e.changedTouches[0].clientX - hotTouchX;
+          if (Math.abs(diff) > 40) {
+            hotCurrent = diff > 0
+              ? ((hotCurrent - 1) + hotImages.length) % hotImages.length
+              : (hotCurrent + 1) % hotImages.length;
+            updateHot();
+          }
+          hotPaused = false;
+        }, { passive: true });
+
+        carousel.addEventListener('mouseenter', () => hotPaused = true);
+        carousel.addEventListener('mouseleave', () => hotPaused = false);
+
+        hotStartAuto();
+      }
     });
 
     // 启动
