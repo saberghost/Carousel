@@ -250,9 +250,9 @@
     banner.addEventListener('mouseenter', () => paused = true);
     banner.addEventListener('mouseleave', () => paused = false);
 
-    // 渲染列表图片（在4-导购后插入热销轮播）
+    // 渲染列表图片（在6-肩颈后插入热销轮播）
     const content = document.getElementById('content');
-    const hotIndex = 3; // 第4张图之后插入热销轮播
+    const hotIndex = 2; // 第4张图之后插入热销轮播
 
     listImages.forEach((src, i) => {
       const img = document.createElement('img');
@@ -331,7 +331,7 @@
       }
     });
 
-    //  启动
+    // 启动
     updateBanner();
     startAuto();
   </script>
